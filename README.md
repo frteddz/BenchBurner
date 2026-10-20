@@ -1,4 +1,4 @@
-
+![Bruce banner.....](https://cdn.modrinth.com/data/cached_images/70d325065ca5eff2b2f973f0f47fb632edaaa8ff.png)
 <div align="center">
 
 [![Ko-fi](https://raw.githubusercontent.com/frteddz/pixel-icons-library-/main/96x/kofi_icon_bg.png)](https://ko-fi.com/majdsafi)
@@ -26,11 +26,9 @@ stats are sampled on a separate thread so the overlay costs very little fps. it 
 - minimal, standard and full presets, for when you want a little info or all of it
 
 ## overlay
-![Overlay](YOUR_OVERLAY_SCREENSHOT_URL)
 every stat can be toggled on or off. open the config screen to drag the overlay anywhere on your screen, or pick a preset to switch the whole layout in one click. yes you can put it in the corner. no i won't judge you for putting it in the middle.
 
 ## benchmark
-![Benchmark](YOUR_BENCHMARK_SCREENSHOT_URL)
 press the benchmark key to start recording and press it again to stop. you get average fps, min and max fps, 1% and 0.1% lows and average frametime. the full run is saved as a csv file in your game directory with a timestamped name. screenshot it, post it, brag about it. or quietly delete it if the numbers hurt.
 
 ## requirements
