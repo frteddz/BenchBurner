@@ -9,65 +9,86 @@
 </div>
 
 ## about
-hi. you're reading a mod description, which means either you care about your fps or you got lost. both are fine.
+you're either trying to impress people with your fps or trying to benchmark your pc, or you just like staring at numbers. no judgment, all three are valid. you're in the right place.
 
-benchburner adds an afterburner-style performance overlay to minecraft with a built-in benchmark recorder. see your fps, frametime graph, cpu load and ram at a glance, then press a key to record a run and get a full summary when you stop. every run can be exported to csv, so you can finally win arguments in discord with actual numbers.
+benchburner is an afterburner-style overlay for minecraft with a built-in benchmark recorder. it shows fps, frametime, cpu and ram, then records a run and tells you exactly how it went. export it to csv and win arguments in discord, or lose them with proof.
 
-stats are sampled on a separate thread so the overlay costs very little fps. it would be embarrassing for a performance mod to lag your game, so i made sure it doesn't. the mod is purely client-side, it doesn't need to be installed on servers and works in any environment.
+if your game runs like a powerpoint after installing 47 performance mods, now you can watch it happen live, with a graph. you're welcome.
+
+client-side only. your server admin never finds out about your 12 fps.
 
 ## features
-- fps with average, 1% low and 0.1% low (the number that exposes your stutters)
-- live frametime graph, for watching your game fall apart in real time
-- cpu load, total and per core
-- ram usage and gpu name
-- cpu temperature where your system exposes it
-- benchmark recording with a summary and csv export
-- drag to reposition, plus scale, opacity and color settings
-- minimal, standard and full presets, for when you want a little info or all of it
+- **fps:** current, average, 1% low and 0.1% low (the number your friend with 400 fps asked you not to look at)
+- **frametime graph:** a live chart of your game falling apart, free entertainment
+- **cpu and ram:** per core load, ram usage, gpu name. yes, it will expose the 94 chrome tabs
+- **cpu temp:** shown only if java allows it. java usually does not
+- **benchmark mode:** record a run, get a summary, export to csv, cry in a spreadsheet
+- **customizable:** drag it anywhere, change scale, opacity and color, or use a preset (minimal, standard, full). you can finally make your suffering look good
 
-## overlay
-every stat can be toggled on or off. open the config screen to drag the overlay anywhere on your screen, or pick a preset to switch the whole layout in one click. yes you can put it in the corner. no i won't judge you for putting it in the middle.
+## how it works
+**overlay:** toggle any stat on or off and drag it wherever you want. top left is classic. dead center of the screen is a bold choice for someone who needs to see where they're going.
 
-## benchmark
-press the benchmark key to start recording and press it again to stop. you get average fps, min and max fps, 1% and 0.1% lows and average frametime. the full run is saved as a csv file in your game directory with a timestamped name. screenshot it, post it, brag about it. or quietly delete it if the numbers hurt.
+**benchmark:** press the key to start, press it again to stop. you get average, min and max fps, 1% and 0.1% lows and average frametime, saved as a timestamped csv in your game directory. post it, or delete it and pretend it never happened. i won't tell.
 
 ## requirements
 - minecraft 1.21.11 with fabric loader and fabric api
 - java 21
-- nothing needed on the server, this mod is client-side only
+- a pc. any pc. i'm not picky, i've seen your fps
 
 ## faq
 
 <details>
-<summary><b>does it work on servers?</b></summary>
-
-yes. install it on your client and join anything. <u>the server never needs it.</u> your server admin can stay blissfully unaware.
-
-</details>
-
-<details>
 <summary><b>does it hurt my fps?</b></summary>
 
-barely. system stats are read on a background thread and the render path does no extra allocation. a tiny cost for knowing exactly how bad things are.
+barely. stats are read on a background thread so the render path stays clean. a performance mod that lags your game would be hilarious, and i refuse to give you that.
 
 </details>
 
 <details>
 <summary><b>why is cpu temperature missing?</b></summary>
 
-some systems, mostly windows, don't expose it to java. when it can't be read the stat is hidden. not a bug, java is just shy.
+some systems, mostly windows, don't let java read it. when it can't be read the stat is hidden. not a bug, java is just shy.
 
 </details>
 
 <details>
-<summary><b>where are my benchmark files?</b></summary>
+<summary><b>my fps is bad, is the mod broken?</b></summary>
 
-in your game directory, saved as timestamped csv files. go look, they're not hiding.
+no. the mod works perfectly. it is simply telling you the truth. nobody warned you about that part.
 
 </details>
+
+<details>
+<summary><b>can i use this to flex my fps?</b></summary>
+
+absolutely. screenshot it, post it, ruin someone's day. just don't post the 0.1% lows.
+
+</details>
+
+<details>
+<summary><b>can i run this on my potato?</b></summary>
+
+yes. the mod is light. the potato is the problem, and now you'll have the data to prove it.
+
+</details>
+
+<details>
+<summary><b>other versions and forge?</b></summary>
+
+more versions and forge are coming soon. asking "when" in the comments will not speed it up. i checked.
+
+</details>
+
 <details>
 <summary><b>something is wrong or missing?</b></summary>
 
-open an [issue](https://github.com/frteddz/BenchBurner/issues) on github with what is off. screenshots help. rage doesn't, but i get it.
+open an [issue](https://github.com/frteddz/BenchBurner/issues) on github with what is off. screenshots help. angry paragraphs don't, but i'll read them anyway.
 
 </details>
+
+## conclusion
+so that's benchburner. it shows your fps, records your runs, and never lies to you, which is more than i can say for most things on the internet.
+
+if you like it, leave a follow or a ko-fi, it helps more than you think. if you hate it, open an issue and tell me why. if your fps is bad, that's not my fault, i just made the graph.
+
+now go benchmark something.
