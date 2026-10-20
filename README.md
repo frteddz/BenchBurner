@@ -1,4 +1,4 @@
-![Hero](YOUR_HERO_IMAGE_URL)
+
 <div align="center">
 
 [![Ko-fi](https://raw.githubusercontent.com/frteddz/pixel-icons-library-/main/96x/kofi_icon_bg.png)](https://ko-fi.com/majdsafi)
@@ -67,14 +67,6 @@ some systems, mostly windows, don't expose it to java. when it can't be read the
 in your game directory, saved as timestamped csv files. go look, they're not hiding.
 
 </details>
-
-<details>
-<summary><b>other versions and forge?</b></summary>
-
-1.21.11 on fabric comes first. once i confirm it works i'll add 1.21 up to the latest version, and maybe forge later.
-
-</details>
-
 <details>
 <summary><b>something is wrong or missing?</b></summary>
 
