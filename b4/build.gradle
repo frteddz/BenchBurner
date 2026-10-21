@@ -1,0 +1,30 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+}
+
+group = maven_group
+
+sourceSets {
+	main {
+		java {
+			srcDir '../src/main/java'
+			include 'fr/teddz/benchburner/b4/**'
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${b4_minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${b4_fabric_api_version}"
+	implementation project(':')
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}

@@ -53,8 +53,8 @@ why do you care? because comparing modpacks needs identical scenes. modpack a in
 
 ## requirements
 
-- minecraft 1.21.11 with fabric loader and fabric api
-- java 21
+- minecraft 1.20.1 through 26.3 with fabric loader and fabric api
+- java 17 or newer
 - a pc. any pc. i'm not picky, i've seen your fps
 
 ## faq
@@ -104,7 +104,7 @@ yes. the mod is light. the potato is the problem, and now you'll have the data t
 <details>
 <summary><b>other versions and forge?</b></summary>
 
-right now it's built for 1.21.11 and fabric only. more versions and loaders are planned after that proves itself. asking "when" in the comments will not speed it up. i checked.
+one jar now covers fabric builds from 1.20.1 through 26.3, and it picks the right internals at startup. forge and beyond 26.3 come later, after this proves itself in the wild. asking "when" in the comments will not speed it up. i checked.
 
 </details>
 

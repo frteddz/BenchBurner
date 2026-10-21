@@ -1,4 +1,4 @@
-package fr.teddz.benchburner.ui;
+package fr.teddz.benchburner.b3.ui;
 
 import java.util.List;
 

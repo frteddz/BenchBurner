@@ -1,4 +1,4 @@
-package fr.teddz.benchburner.platform;
+package fr.teddz.benchburner.b2.platform;
 
 import org.lwjgl.opengl.GL11;
 

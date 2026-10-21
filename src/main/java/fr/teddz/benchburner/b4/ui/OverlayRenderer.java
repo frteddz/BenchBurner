@@ -1,4 +1,4 @@
-package fr.teddz.benchburner.ui;
+package fr.teddz.benchburner.b4.ui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Locale;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.network.chat.Style;
@@ -38,7 +38,7 @@ private record ModuleContent(List<Row> rows, boolean hasGraph) {
 
 private double[] graphScratch = new double[110];
 
-public void draw(GuiGraphics graphics, ConfigData settings, FpsWindowCalculator fpsCalculator, SystemStats stats, GpuSample gpu, String gpuName, BenchmarkManager benchmark) {
+public void draw(GuiGraphicsExtractor graphics, ConfigData settings, FpsWindowCalculator fpsCalculator, SystemStats stats, GpuSample gpu, String gpuName, BenchmarkManager benchmark) {
 Font font = Minecraft.getInstance().font;
 if (font == null) return;
 FpsStats fps = fpsCalculator.stats();
@@ -104,8 +104,8 @@ int labelWidth = labelWidths[i];
 for (Row row : module.rows()) {
 int valueRgb = row.valueColor() == NO_COLOR ? settings.textColor & 0xFFFFFF : row.valueColor();
 int valueArgb = (textAlpha << 24) | (valueRgb & 0xFFFFFF);
-graphics.drawString(font, component(row.label(), baseStyle), PADDING, rowY, textArgb, false);
-graphics.drawString(font, component(row.value(), baseStyle), PADDING + labelWidth + LABEL_OFFSET, rowY, valueArgb, false);
+graphics.text(font, component(row.label(), baseStyle), PADDING, rowY, textArgb, false);
+graphics.text(font, component(row.value(), baseStyle), PADDING + labelWidth + LABEL_OFFSET, rowY, valueArgb, false);
 rowY += lineHeight;
 }
 if (module.hasGraph()) {
@@ -116,7 +116,7 @@ drawGraph(graphics, fpsCalculator, settings, textAlpha, PADDING, top + height - 
 pose.popMatrix();
 }
 
-private void drawGraph(GuiGraphics graphics, FpsWindowCalculator fpsCalculator, ConfigData settings, int textAlpha, int x, int baseline) {
+private void drawGraph(GuiGraphicsExtractor graphics, FpsWindowCalculator fpsCalculator, ConfigData settings, int textAlpha, int x, int baseline) {
 int count = fpsCalculator.copyLatest(graphScratch);
 if (count < 2) return;
 double maxMs = 1;

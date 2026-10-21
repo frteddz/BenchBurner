@@ -1,4 +1,5 @@
 {
+	"key.categories.benchburner": "BenchBurner",
 	"key.category.benchburner.main": "BenchBurner",
 	"key.benchburner.toggle": "Start or stop benchmark",
 	"key.benchburner.config": "Open overlay settings",

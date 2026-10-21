@@ -1,4 +1,4 @@
-package fr.teddz.benchburner.ui;
+package fr.teddz.benchburner.b2.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,8 +18,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -58,6 +56,8 @@ private SettingsList settingsList;
 private EditBox presetNameBox;
 private String presetNameText = "";
 private String notice = "";
+private int listTop;
+private int listBottom;
 
 public OverlayConfigScreen(ConfigStore configStore, Screen returnScreen) {
 super(Component.literal("BenchBurner settings"));
@@ -98,10 +98,11 @@ this.addRenderableWidget(Button.builder(Component.literal("Save"), pressed -> th
 .build());
 
 int doneY = this.height - 28;
-int listTop = 56;
-int listHeight = Math.max(40, doneY - 4 - listTop);
-this.settingsList = new SettingsList(this.minecraft, this.width - 20, listHeight, listTop, ROW_HEIGHT);
-this.settingsList.setX(10);
+int top = 56;
+int listHeight = Math.max(40, doneY - 4 - top);
+this.listTop = top;
+this.listBottom = top + listHeight;
+this.settingsList = new SettingsList(this.minecraft, this.width - 20, listHeight, top, ROW_HEIGHT);
 this.addRenderableWidget(this.settingsList);
 this.settingsList.replaceEntries(buildRows());
 
@@ -250,27 +251,25 @@ graphics.drawString(this.font, footer, 6, this.height - 14, this.notice.isEmpty(
 }
 
 @Override
-public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-if (this.presetMenu.handleClick(event.x(), event.y())) {
+public boolean mouseClicked(double mouseX, double mouseY, int button) {
+if (this.presetMenu.handleClick(mouseX, mouseY)) {
 playClick();
 this.applyPresetChoice(this.presetMenu.selected());
 return true;
 }
-int listTop = this.settingsList.getY();
-int listBottom = this.settingsList.getBottom();
 for (SettingsList.Row row : this.settingsList.children()) {
-int rowTop = row.getY();
-if (rowTop + ROW_HEIGHT <= listTop || rowTop >= listBottom) continue;
-boolean columnHit = event.x() >= row.getX() && event.x() < row.getX() + row.getWidth();
-boolean rowHit = event.y() >= rowTop && event.y() < rowTop + ROW_HEIGHT;
-boolean visibleHit = event.y() >= listTop && event.y() < listBottom;
+int rowTop = row.rowY();
+if (rowTop + ROW_HEIGHT <= this.listTop || rowTop >= this.listBottom) continue;
+boolean columnHit = mouseX >= row.rowX() && mouseX < row.rowX() + row.rowWidth();
+boolean rowHit = mouseY >= rowTop && mouseY < rowTop + ROW_HEIGHT;
+boolean visibleHit = mouseY >= this.listTop && mouseY < this.listBottom;
 if (!columnHit || !rowHit || !visibleHit) continue;
-if (row.handlePress(event)) {
+if (row.handlePress(mouseX, mouseY, button)) {
 playClick();
 return true;
 }
 }
-return super.mouseClicked(event, doubleClick);
+return super.mouseClicked(mouseX, mouseY, button);
 }
 
 private void applyPresetChoice(String chosen) {
@@ -332,12 +331,12 @@ return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
 }
 
 @Override
-public boolean keyPressed(KeyEvent event) {
-if (event.key() == GLFW.GLFW_KEY_ESCAPE && this.presetMenu.isOpen()) {
+public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+if (keyCode == GLFW.GLFW_KEY_ESCAPE && this.presetMenu.isOpen()) {
 this.presetMenu.close();
 return true;
 }
-return super.keyPressed(event);
+return super.keyPressed(keyCode, scanCode, modifiers);
 }
 
 private void playClick() {
@@ -361,20 +360,15 @@ super(client, width, height, y, itemHeight);
 
 @Override
 public int getRowWidth() {
-return this.getWidth() - 14;
-}
-
-@Override
-protected void renderScrollbar(GuiGraphics graphics, int mouseX, int mouseY) {
-}
-
-@Override
-protected boolean isOverScrollbar(double mouseX, double mouseY) {
-return false;
+return this.width - 14;
 }
 
 public abstract static class Row extends ObjectSelectionList.Entry<Row> {
 final ConfigData data;
+private int rowX;
+private int rowY;
+private int rowWidth;
+private int rowHeight = ROW_HEIGHT;
 
 Row(ConfigData data) {
 this.data = data;
@@ -385,19 +379,41 @@ public Component getNarration() {
 return Component.literal("overlay setting");
 }
 
-abstract boolean handlePress(MouseButtonEvent event);
+abstract boolean handlePress(double mouseX, double mouseY, int button);
+
+@Override
+public void render(GuiGraphics graphics, int index, int y, int x, int width, int height, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+this.rowX = x;
+this.rowY = y;
+this.rowWidth = width;
+this.rowHeight = height;
+this.draw(graphics, hovered);
+}
+
+abstract void draw(GuiGraphics graphics, boolean hovered);
 
 boolean inBounds(double mouseX, double mouseY) {
-int x = this.getX();
-int y = this.getY();
-return mouseX >= x && mouseX < x + this.getWidth() && mouseY >= y && mouseY < y + this.getHeight();
+return mouseX >= this.rowX && mouseX < this.rowX + this.rowWidth
+&& mouseY >= this.rowY && mouseY < this.rowY + this.rowHeight;
+}
+
+int rowX() {
+return this.rowX;
+}
+
+int rowY() {
+return this.rowY;
+}
+
+int rowWidth() {
+return this.rowWidth;
 }
 
 void panel(GuiGraphics graphics, boolean hovered) {
-int x = this.getX();
-int y = this.getY();
-int width = this.getWidth();
-int height = this.getHeight();
+int x = this.rowX;
+int y = this.rowY;
+int width = this.rowWidth;
+int height = this.rowHeight;
 graphics.fill(x, y, x + width, y + height, hovered ? ROW_HOVER : ROW_BG);
 Outline.draw(graphics, x, y, width, height, hovered ? OUTLINE_HOVER : OUTLINE);
 }
@@ -412,23 +428,23 @@ this.spec = spec;
 }
 
 @Override
-boolean handlePress(MouseButtonEvent event) {
-if (!this.inBounds(event.x(), event.y())) return false;
-this.spec.setter().accept(this.data, event.button() != 1);
+boolean handlePress(double mouseX, double mouseY, int button) {
+if (!this.inBounds(mouseX, mouseY)) return false;
+this.spec.setter().accept(this.data, button != 1);
 return true;
 }
 
 @Override
-public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+void draw(GuiGraphics graphics, boolean hovered) {
 panel(graphics, hovered);
 String state = this.spec.getter().getAsBoolean() ? "on" : "off";
 boolean on = this.spec.getter().getAsBoolean();
 var font = Minecraft.getInstance().font;
-graphics.drawString(font, this.spec.name(), this.getX() + 6, this.getY() + 7, TEXT, false);
-int stateX = this.getX() + this.getWidth() - 6 - font.width(state);
+graphics.drawString(font, this.spec.name(), this.rowX() + 6, this.rowY() + 7, TEXT, false);
+int stateX = this.rowX() + this.rowWidth() - 6 - font.width(state);
 int hintX = stateX - 10 - font.width("L on  R off");
-graphics.drawString(font, "L on  R off", hintX, this.getY() + 7, DIM, false);
-graphics.drawString(font, state, stateX, this.getY() + 7, on ? ACCENT : OFF, false);
+graphics.drawString(font, "L on  R off", hintX, this.rowY() + 7, DIM, false);
+graphics.drawString(font, state, stateX, this.rowY() + 7, on ? ACCENT : OFF, false);
 }
 }
 
@@ -441,9 +457,9 @@ this.spec = spec;
 }
 
 @Override
-boolean handlePress(MouseButtonEvent event) {
-if (!this.inBounds(event.x(), event.y())) return false;
-writeQuiet(event.button() == 1 ? this.spec.step() : -this.spec.step());
+boolean handlePress(double mouseX, double mouseY, int button) {
+if (!this.inBounds(mouseX, mouseY)) return false;
+writeQuiet(button == 1 ? this.spec.step() : -this.spec.step());
 return true;
 }
 
@@ -451,20 +467,22 @@ private void writeQuiet(double delta) {
 double stepped = this.spec.getter().getAsDouble() + delta;
 if (this.spec.step() >= 1) stepped = Math.round(stepped);
 else stepped = Math.round(stepped / this.spec.step()) * this.spec.step();
-this.spec.setter().accept(Math.clamp(stepped, this.spec.min(), this.spec.max()));
+if (stepped < this.spec.min()) stepped = this.spec.min();
+if (stepped > this.spec.max()) stepped = this.spec.max();
+this.spec.setter().accept(stepped);
 }
 
 @Override
-public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+void draw(GuiGraphics graphics, boolean hovered) {
 panel(graphics, hovered);
 String valueText = String.format(Locale.ROOT, this.spec.format(), this.spec.getter().getAsDouble());
 var font = Minecraft.getInstance().font;
-int x = this.getX();
-int y = this.getY();
+int x = this.rowX();
+int y = this.rowY();
 graphics.drawString(font, "L-", x + 6, y + 7, OFF, false);
 graphics.drawString(font, "R+", x + 28, y + 7, OFF, false);
 graphics.drawString(font, this.spec.name(), x + 52, y + 7, TEXT, false);
-int valueX = x + this.getWidth() - 6 - font.width(valueText);
+int valueX = x + this.rowWidth() - 6 - font.width(valueText);
 graphics.drawString(font, valueText, valueX, y + 7, ACCENT, false);
 }
 }
@@ -478,24 +496,24 @@ this.spec = spec;
 }
 
 @Override
-boolean handlePress(MouseButtonEvent event) {
-if (!this.inBounds(event.x(), event.y())) return false;
+boolean handlePress(double mouseX, double mouseY, int button) {
+if (!this.inBounds(mouseX, mouseY)) return false;
 int length = COLOR_VALUES.length;
-int dir = event.button() == 1 ? length - 1 : 1;
+int dir = button == 1 ? length - 1 : 1;
 int next = (indexOfColor(this.spec.getter().getAsInt()) + dir) % length;
 this.spec.setter().accept(this.data, COLOR_VALUES[next]);
 return true;
 }
 
 @Override
-public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+void draw(GuiGraphics graphics, boolean hovered) {
 panel(graphics, hovered);
 int current = this.spec.getter().getAsInt();
 String name = this.spec.name() + " " + COLOR_NAMES[indexOfColor(current)];
-graphics.drawString(Minecraft.getInstance().font, name, this.getX() + 6, this.getY() + 7, TEXT, false);
-int swatch = this.getX() + this.getWidth() - 30;
-graphics.fill(swatch, this.getY() + 6, swatch + 10, this.getY() + 16, SWATCH_BG | (current & 0xFFFFFF));
-Outline.draw(graphics, swatch - 1, this.getY() + 5, 12, 12, OUTLINE);
+graphics.drawString(Minecraft.getInstance().font, name, this.rowX() + 6, this.rowY() + 7, TEXT, false);
+int swatch = this.rowX() + this.rowWidth() - 30;
+graphics.fill(swatch, this.rowY() + 6, swatch + 10, this.rowY() + 16, SWATCH_BG | (current & 0xFFFFFF));
+Outline.draw(graphics, swatch - 1, this.rowY() + 5, 12, 12, OUTLINE);
 }
 }
 
@@ -508,18 +526,18 @@ this.spec = spec;
 }
 
 @Override
-boolean handlePress(MouseButtonEvent event) {
-if (!this.inBounds(event.x(), event.y())) return false;
-if (event.button() != 0) return false;
+boolean handlePress(double mouseX, double mouseY, int button) {
+if (!this.inBounds(mouseX, mouseY)) return false;
+if (button != 0) return false;
 this.spec.action().run();
 return true;
 }
 
 @Override
-public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+void draw(GuiGraphics graphics, boolean hovered) {
 panel(graphics, hovered);
-graphics.drawString(Minecraft.getInstance().font, this.spec.label(), this.getX() + 6, this.getY() + 7, TEXT, false);
-graphics.drawString(Minecraft.getInstance().font, ">", this.getX() + this.getWidth() - 15, this.getY() + 7, OFF, false);
+graphics.drawString(Minecraft.getInstance().font, this.spec.label(), this.rowX() + 6, this.rowY() + 7, TEXT, false);
+graphics.drawString(Minecraft.getInstance().font, ">", this.rowX() + this.rowWidth() - 15, this.rowY() + 7, OFF, false);
 }
 }
 
@@ -536,22 +554,22 @@ this.onToggle = onToggle;
 }
 
 @Override
-boolean handlePress(MouseButtonEvent event) {
-if (!this.inBounds(event.x(), event.y())) return false;
+boolean handlePress(double mouseX, double mouseY, int button) {
+if (!this.inBounds(mouseX, mouseY)) return false;
 this.onToggle.run();
 return true;
 }
 
 @Override
-public void renderContent(GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-int x = this.getX();
-int y = this.getY();
-int width = this.getWidth();
-int height = this.getHeight();
+void draw(GuiGraphics graphics, boolean hovered) {
+int x = this.rowX();
+int y = this.rowY();
+int width = this.rowWidth();
+int height = ROW_HEIGHT;
 graphics.fill(x, y, x + width, y + height, 0xF0161616);
 Outline.draw(graphics, x, y, width, height, OUTLINE_HOVER);
 graphics.drawString(Minecraft.getInstance().font, this.name, x + 6, y + 7, TEXT, false);
-graphics.drawString(Minecraft.getInstance().font, this.open ? "^" : "v", x + this.getWidth() - 14, y + 7, ACCENT, false);
+graphics.drawString(Minecraft.getInstance().font, this.open ? "^" : "v", x + width - 14, y + 7, ACCENT, false);
 }
 }
 }

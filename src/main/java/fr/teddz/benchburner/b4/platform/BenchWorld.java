@@ -1,4 +1,4 @@
-package fr.teddz.benchburner.platform;
+package fr.teddz.benchburner.b4.platform;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +51,7 @@ this.finisher = finisher;
 
 void requestStart(Minecraft client) {
 if (this.state != State.IDLE) {
-BenchBurnerClient.message("A benchmark world run is already in progress");
+Platform.message("A benchmark world run is already in progress");
 return;
 }
 ensureExtracted();
@@ -73,7 +73,7 @@ return;
 if (this.state == State.LOADING || this.state == State.WARMUP || this.state == State.RECORDING) {
 if (benchmark.isRecording()) benchmark.stop();
 this.state = State.IDLE;
-BenchBurnerClient.message("Auto run cancelled");
+Platform.message("Auto run cancelled");
 }
 return;
 }
@@ -83,7 +83,7 @@ if (client.getSingleplayerServer() != null) {
 prep(client.getSingleplayerServer());
 this.ticks = 0;
 this.state = State.WARMUP;
-BenchBurnerClient.message("Benchmark world ready, warmup 5 seconds");
+Platform.message("Benchmark world ready, warmup 5 seconds");
 }
 }
 case WARMUP -> {
@@ -92,7 +92,7 @@ if (this.ticks >= WARMUP_TICKS) {
 benchmark.start();
 this.ticks = 0;
 this.state = State.RECORDING;
-BenchBurnerClient.message("Recording for " + data.autoRunSeconds + " seconds");
+Platform.message("Recording for " + data.autoRunSeconds + " seconds");
 }
 }
 case RECORDING -> {
@@ -109,7 +109,7 @@ default -> {
 }
 
 private void open(Minecraft client) {
-BenchBurnerClient.message("Opening the benchmark world");
+Platform.message("Opening the benchmark world");
 client.createWorldOpenFlows().openWorld(WORLD_NAME, () -> {});
 this.state = State.LOADING;
 }

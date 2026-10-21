@@ -1,17 +1,14 @@
-package fr.teddz.benchburner.platform;
+package fr.teddz.benchburner.b1.platform;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
 
-import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
-import net.fabricmc.loader.api.FabricLoader;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -20,63 +17,49 @@ import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.teddz.benchburner.b1.ui.OverlayConfigScreen;
+import fr.teddz.benchburner.b1.ui.OverlayElement;
 import fr.teddz.benchburner.config.ConfigStore;
 import fr.teddz.benchburner.core.BenchmarkManager;
 import fr.teddz.benchburner.core.BenchmarkResult;
 import fr.teddz.benchburner.core.BenchmarkSummary;
 import fr.teddz.benchburner.core.CsvExporter;
-import fr.teddz.benchburner.core.FpsWindowCalculator;
-import fr.teddz.benchburner.core.GpuSampleWorker;
-import fr.teddz.benchburner.core.SystemStatsSampler;
-import fr.teddz.benchburner.ui.OverlayConfigScreen;
-import fr.teddz.benchburner.ui.OverlayElement;
+import fr.teddz.benchburner.core.Dependencies;
+import fr.teddz.benchburner.core.PlatformEntry;
 
-public final class BenchBurnerClient implements ClientModInitializer {
+public final class Platform implements PlatformEntry {
 private static final Logger LOGGER = LoggerFactory.getLogger("benchburner");
+private static final String CATEGORY = "key.categories.benchburner";
 
 private ConfigStore configStore;
 
 @Override
-public void onInitializeClient() {
-configStore = new ConfigStore(FabricLoader.getInstance().getConfigDir());
-BenchmarkManager benchmark = new BenchmarkManager();
-FpsWindowCalculator fpsCalculator = new FpsWindowCalculator(24000);
-SystemStatsSampler statsSampler = new SystemStatsSampler();
-Thread statsThread = new Thread(statsSampler, "benchburner-stats");
-statsThread.setDaemon(true);
-statsThread.start();
-GpuSampleWorker gpuWorker = new GpuSampleWorker();
-Thread gpuThread = new Thread(gpuWorker, "benchburner-gpu");
-gpuThread.setDaemon(true);
-gpuThread.start();
+public void init(Dependencies dependencies) {
+this.configStore = dependencies.configStore();
+BenchmarkManager benchmark = dependencies.benchmark();
+CsvExporter csvExporter = dependencies.csvExporter();
 GpuProbe gpuProbe = new GpuProbe();
-OverlayElement overlay = new OverlayElement(configStore.data(), fpsCalculator, statsSampler, gpuWorker, gpuProbe, benchmark);
+OverlayElement overlay = new OverlayElement(configStore.data(), dependencies.fpsCalculator(), dependencies.statsSampler(), dependencies.gpuWorker(), gpuProbe, benchmark);
 
-HudElementRegistry.attachElementAfter(
-VanillaHudElements.MISC_OVERLAYS,
-Identifier.fromNamespaceAndPath("benchburner", "overlay"),
-overlay);
+HudRenderCallback.EVENT.register(overlay);
 
-KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("benchburner", "main"));
 WatchedKeyMapping benchmarkKey = (WatchedKeyMapping) KeyBindingHelper.registerKeyBinding(new WatchedKeyMapping(
-"key.benchburner.toggle", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, category));
+"key.benchburner.toggle", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, CATEGORY));
 WatchedKeyMapping settingsKey = (WatchedKeyMapping) KeyBindingHelper.registerKeyBinding(new WatchedKeyMapping(
-"key.benchburner.config", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, category));
+"key.benchburner.config", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, CATEGORY));
 WatchedKeyMapping exportKey = (WatchedKeyMapping) KeyBindingHelper.registerKeyBinding(new WatchedKeyMapping(
-"key.benchburner.export", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N, category));
+"key.benchburner.export", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N, CATEGORY));
 WatchedKeyMapping worldKey = (WatchedKeyMapping) KeyBindingHelper.registerKeyBinding(new WatchedKeyMapping(
-"key.benchburner.world", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, category));
+"key.benchburner.world", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY));
 WatchedKeyMapping overlayKey = (WatchedKeyMapping) KeyBindingHelper.registerKeyBinding(new WatchedKeyMapping(
-"key.benchburner.overlay", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, category));
+"key.benchburner.overlay", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, CATEGORY));
 
-CsvExporter csvExporter = new CsvExporter();
 BenchWorld benchWorld = new BenchWorld(result -> writeCsv(csvExporter, result));
 benchWorld.ensureExtracted();
 ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -123,17 +106,26 @@ return screen == null || screen instanceof TitleScreen || screen instanceof Paus
 }
 
 private static boolean isKeyDown(Minecraft client, InputConstants.Key key) {
-long window = client.getWindow().handle();
+long window = client.getWindow().getWindow();
 return key.getValue() >= 0 && GLFW.glfwGetKey(window, key.getValue()) == GLFW.GLFW_PRESS;
 }
 
 private static final class WatchedKeyMapping extends KeyMapping {
-WatchedKeyMapping(String name, InputConstants.Type type, int code, KeyMapping.Category category) {
+private InputConstants.Key boundKey;
+
+WatchedKeyMapping(String name, InputConstants.Type type, int code, String category) {
 super(name, type, code, category);
 }
 
+@Override
+public void setKey(InputConstants.Key key) {
+super.setKey(key);
+this.boundKey = key;
+}
+
 InputConstants.Key watchedKey() {
-return this.key;
+InputConstants.Key bound = this.boundKey;
+return bound != null ? bound : this.getDefaultKey();
 }
 }
 
@@ -165,7 +157,7 @@ writeCsv(csvExporter, result);
 }
 
 private static void writeCsv(CsvExporter csvExporter, BenchmarkResult result) {
-Path gameDirectory = FabricLoader.getInstance().getGameDir();
+Path gameDirectory = net.fabricmc.loader.api.FabricLoader.getInstance().getGameDir();
 try {
 Path csv = csvExporter.export(gameDirectory, result.frameTimesMs());
 message(summaryMessage(result.summary()));

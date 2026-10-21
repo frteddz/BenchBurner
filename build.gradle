@@ -1,35 +1,52 @@
 plugins {
-	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+	id 'java-library'
 }
 
 group = maven_group
-version = "${mod_version}+fabric-${minecraft_version}"
+version = mod_version
 
 base {
-	archivesName = 'benchburner'
+	archivesName = 'benchburner-core'
 }
 
-repositories {
-	mavenCentral()
-}
-
-loom {
-	mods {
-		'benchburner' {
-			sourceSet sourceSets.main
+sourceSets {
+	main {
+		java {
+			exclude 'fr/teddz/benchburner/b1/**'
+			exclude 'fr/teddz/benchburner/b2/**'
+			exclude 'fr/teddz/benchburner/b3/**'
+			exclude 'fr/teddz/benchburner/b4/**'
 		}
 	}
 }
 
+repositories {
+	mavenCentral()
+	maven {
+		name = 'Fabric'
+		url = 'https://maven.fabricmc.net/'
+	}
+}
+
 dependencies {
-	minecraft "com.mojang:minecraft:${minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+	compileOnly "net.fabricmc:fabric-loader:${loader_version}"
+	compileOnly 'com.google.code.gson:gson:2.10.1'
+	compileOnly 'com.github.oshi:oshi-core:6.6.5'
+
+	testImplementation 'com.google.code.gson:gson:2.10.1'
 
 	testImplementation platform('org.junit:junit-bom:5.10.2')
 	testImplementation 'org.junit.jupiter:junit-jupiter'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 17
 }
 
 processResources {
@@ -40,27 +57,37 @@ processResources {
 	}
 }
 
-java {
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
-	withSourcesJar()
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
-}
-
 test {
 	useJUnitPlatform()
 }
 
+def bucketJarTasks = ['b1:remapJar', 'b2:remapJar', 'b3:remapJar', 'b4:jar']
+
+tasks.register('universalJar', Zip) {
+	archiveBaseName = 'benchburner'
+	archiveFileName = "benchburner-${mod_version}.jar"
+	archiveClassifier = ''
+	destinationDirectory = layout.buildDirectory.dir('libs')
+	dependsOn bucketJarTasks.collect { ":${it}" }
+
+	from sourceSets.main.output
+	from({
+		bucketJarTasks.collect {
+			zipTree(tasks.getByPath(":${it}").archiveFile.get().asFile)
+		}
+	}) {
+		exclude 'META-INF/**'
+	}
+}
+
 def jarArchiveDir = file("archive")
 
-tasks.register("archiveJar", Copy) {
-	from(remapJar)
+tasks.register('archiveJar', Copy) {
+	from(tasks.named('universalJar'))
 	into(jarArchiveDir)
 }
 
-tasks.named("build") {
-	dependsOn("archiveJar")
+tasks.named('build') {
+	dependsOn 'universalJar'
+	dependsOn 'archiveJar'
 }

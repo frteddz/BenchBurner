@@ -1,4 +1,4 @@
-package fr.teddz.benchburner.ui;
+package fr.teddz.benchburner.b2.ui;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,7 +11,7 @@ import fr.teddz.benchburner.core.FpsWindowCalculator;
 import fr.teddz.benchburner.core.GpuSampleWorker;
 import fr.teddz.benchburner.core.SystemStats;
 import fr.teddz.benchburner.core.SystemStatsSampler;
-import fr.teddz.benchburner.platform.GpuProbe;
+import fr.teddz.benchburner.b2.platform.GpuProbe;
 
 public final class OverlayElement implements HudElement {
 private static final double STALE_FRAME_LIMIT_MS = 1000.0;

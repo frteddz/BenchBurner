@@ -1,0 +1,31 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_remap_version}"
+}
+
+group = maven_group
+
+sourceSets {
+	main {
+		java {
+			srcDir '../src/main/java'
+			include 'fr/teddz/benchburner/b3/**'
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${b3_minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${b3_fabric_api_version}"
+	implementation project(':')
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
