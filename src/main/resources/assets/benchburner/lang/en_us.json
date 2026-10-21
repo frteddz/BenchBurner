@@ -1,0 +1,8 @@
+{
+	"key.category.benchburner.main": "BenchBurner",
+	"key.benchburner.toggle": "Start or stop benchmark",
+	"key.benchburner.config": "Open overlay settings",
+	"key.benchburner.export": "Export last benchmark to CSV",
+	"key.benchburner.world": "Open the benchmark world",
+	"key.benchburner.overlay": "Toggle the overlay"
+}

@@ -1,0 +1,66 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+}
+
+group = maven_group
+version = "${mod_version}+fabric-${minecraft_version}"
+
+base {
+	archivesName = 'benchburner'
+}
+
+repositories {
+	mavenCentral()
+}
+
+loom {
+	mods {
+		'benchburner' {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+	testImplementation platform('org.junit:junit-bom:5.10.2')
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+processResources {
+	inputs.property 'version', version
+
+	filesMatching('fabric.mod.json') {
+		expand 'version': version
+	}
+}
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+	withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+test {
+	useJUnitPlatform()
+}
+
+def jarArchiveDir = file("archive")
+
+tasks.register("archiveJar", Copy) {
+	from(remapJar)
+	into(jarArchiveDir)
+}
+
+tasks.named("build") {
+	dependsOn("archiveJar")
+}

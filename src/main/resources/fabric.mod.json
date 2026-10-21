@@ -1,0 +1,28 @@
+{
+	"schemaVersion": 1,
+	"id": "benchburner",
+	"version": "${version}",
+	"name": "BenchBurner",
+	"description": "MSI afterburner overlay for minecraft",
+	"authors": [
+		"T3ddz"
+	],
+	"icon": "assets/benchburner/icon.png",
+	"contact": {
+		"homepage": "https://teddzfr.carrd.co/",
+		"sources": "https://github.com/frteddz/BenchBurner"
+	},
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"fr.teddz.benchburner.platform.BenchBurnerClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "=1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
